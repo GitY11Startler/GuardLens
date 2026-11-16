@@ -1,0 +1,149 @@
+=== d0 ===
+[d0] 0 already scored, 8212 to go
+[d0] 256/8212 scored
+[d0] 512/8212 scored
+[d0] 768/8212 scored
+[d0] 1024/8212 scored
+[d0] 1280/8212 scored
+[d0] 1536/8212 scored
+[d0] 1792/8212 scored
+[d0] 2048/8212 scored
+[d0] 2304/8212 scored
+[d0] 2560/8212 scored
+[d0] 2816/8212 scored
+[d0] 3072/8212 scored
+[d0] 3328/8212 scored
+[d0] 3584/8212 scored
+[d0] 3840/8212 scored
+[d0] 4096/8212 scored
+[d0] 4352/8212 scored
+[d0] 4608/8212 scored
+[d0] 4864/8212 scored
+[d0] 5120/8212 scored
+[d0] 5376/8212 scored
+[d0] 5632/8212 scored
+[d0] 5888/8212 scored
+[d0] 6144/8212 scored
+[d0] 6400/8212 scored
+[d0] 6656/8212 scored
+[d0] 6912/8212 scored
+[d0] 7168/8212 scored
+[d0] 7424/8212 scored
+[d0] 7680/8212 scored
+[d0] 7936/8212 scored
+[d0] 8192/8212 scored
+[d0] 8212/8212 scored
+[d0] test: AUROC 0.599 | FPR@95% TPR 1.000 -> C:\Users\yas1z\Downloads\GuardLens\results\runs\d0_test_v2
+=== d1 ===
+Loading weights:   0%|          | 0/138 [00:00<?, ?it/s]Loading weights:  14%|#3        | 19/138 [00:00<00:00, 178.87it/s]Loading weights:  27%|##6       | 37/138 [00:00<00:00, 146.02it/s]Loading weights: 100%|##########| 138/138 [00:00<00:00, 538.42it/s]
+[d1] 0 already scored, 8212 to go
+[d1] 256/8212 scored
+[d1] 512/8212 scored
+[d1] 768/8212 scored
+[d1] 1024/8212 scored
+[d1] 1280/8212 scored
+[d1] 1536/8212 scored
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (9141 > 8192). Running this sequence through the model will result in indexing errors
+[d1] 1792/8212 scored
+[d1] 2048/8212 scored
+[d1] 2304/8212 scored
+[d1] 2560/8212 scored
+[d1] 2816/8212 scored
+[d1] 3072/8212 scored
+[d1] 3328/8212 scored
+[d1] 3584/8212 scored
+[d1] 3840/8212 scored
+[d1] 4096/8212 scored
+[d1] 4352/8212 scored
+[d1] 4608/8212 scored
+[d1] 4864/8212 scored
+[d1] 5120/8212 scored
+[d1] 5376/8212 scored
+[d1] 5632/8212 scored
+[d1] 5888/8212 scored
+[d1] 6144/8212 scored
+[d1] 6400/8212 scored
+[d1] 6656/8212 scored
+[d1] 6912/8212 scored
+[d1] 7168/8212 scored
+[d1] 7424/8212 scored
+[d1] 7680/8212 scored
+[d1] 7936/8212 scored
+[d1] 8192/8212 scored
+[d1] 8212/8212 scored
+[d1] test: AUROC 0.928 | FPR@95% TPR 0.298 -> C:\Users\yas1z\Downloads\GuardLens\results\runs\d1_test_v2
+=== d3 ===
+[d3] 0 already scored, 8212 to go
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights:  19%|#8        | 37/199 [00:00<00:00, 363.23it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 1030.85it/s]
+[d3] 256/8212 scored
+[d3] 512/8212 scored
+[d3] 768/8212 scored
+[d3] 1024/8212 scored
+[d3] 1280/8212 scored
+[d3] 1536/8212 scored
+[d3] 1792/8212 scored
+[d3] 2048/8212 scored
+[d3] 2304/8212 scored
+[d3] 2560/8212 scored
+[d3] 2816/8212 scored
+[d3] 3072/8212 scored
+[d3] 3328/8212 scored
+[d3] 3584/8212 scored
+[d3] 3840/8212 scored
+[d3] 4096/8212 scored
+[d3] 4352/8212 scored
+[d3] 4608/8212 scored
+[d3] 4864/8212 scored
+[d3] 5120/8212 scored
+[d3] 5376/8212 scored
+[d3] 5632/8212 scored
+[d3] 5888/8212 scored
+[d3] 6144/8212 scored
+[d3] 6400/8212 scored
+[d3] 6656/8212 scored
+[d3] 6912/8212 scored
+[d3] 7168/8212 scored
+[d3] 7424/8212 scored
+[d3] 7680/8212 scored
+[d3] 7936/8212 scored
+[d3] 8192/8212 scored
+[d3] 8212/8212 scored
+[d3] test: AUROC 0.883 | FPR@95% TPR 0.389 -> C:\Users\yas1z\Downloads\GuardLens\results\runs\d3_test_v2
+=== d2 ===
+[d2] 0 already scored, 8212 to go
+[d2] 256/8212 scored
+[d2] 512/8212 scored
+[d2] 768/8212 scored
+[d2] 1024/8212 scored
+[d2] 1280/8212 scored
+[d2] 1536/8212 scored
+[d2] 1792/8212 scored
+[d2] 2048/8212 scored
+[d2] 2304/8212 scored
+[d2] 2560/8212 scored
+[d2] 2816/8212 scored
+[d2] 3072/8212 scored
+[d2] 3328/8212 scored
+[d2] 3584/8212 scored
+[d2] 3840/8212 scored
+[d2] 4096/8212 scored
+[d2] 4352/8212 scored
+[d2] 4608/8212 scored
+[d2] 4864/8212 scored
+[d2] 5120/8212 scored
+[d2] 5376/8212 scored
+[d2] 5632/8212 scored
+[d2] 5888/8212 scored
+[d2] 6144/8212 scored
+[d2] 6400/8212 scored
+[d2] 6656/8212 scored
+[d2] 6912/8212 scored
+[d2] 7168/8212 scored
+[d2] 7424/8212 scored
+[d2] 7680/8212 scored
+[d2] 7936/8212 scored
+[d2] 8192/8212 scored
+[d2] 8212/8212 scored
+[d2] test: AUROC 0.842 | FPR@95% TPR 0.556 -> C:\Users\yas1z\Downloads\GuardLens\results\runs\d2_test_v2
+=== done ===
