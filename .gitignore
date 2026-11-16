@@ -1,0 +1,27 @@
+# Environment & secrets
+.venv/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Data, models, raw predictions (never committed)
+data/
+models/
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+*.gguf
+*.faiss
+results/raw/
+results/**/predictions*.jsonl

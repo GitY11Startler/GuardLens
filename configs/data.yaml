@@ -1,0 +1,34 @@
+# Data build config for `gl build-data`. Bump `version` whenever anything here changes.
+# v1: first build. v2: wildjailbreak capped at 1,500/label so test is ~half seen, half held-out.
+version: v2
+seed: 13
+
+# Max examples kept per (source, label) after within-source exact dedup.
+default_cap: 5000
+
+split_ratios: {train: 0.70, dev: 0.15, test: 0.15}
+
+# Never in train/dev, test only. Set to [] to train on these families again.
+held_out_families: [adversarial_jailbreak]
+# Also send that source's benign look-alikes to test (avoids teaching "this style = benign").
+hold_out_whole_source: true
+
+dedup: {threshold: 0.8, shingle_size: 5, num_perm: 128}
+
+# family: attack family of the source's attacks (null = benign-only source).
+sources:
+  # --- prompt injection
+  deepset:       {hf_id: deepset/prompt-injections,              license: apache-2.0, family: direct_injection}
+  gandalf:       {hf_id: Lakera/gandalf_ignore_instructions,     license: mit,        family: direct_injection}
+  mosscap:       {hf_id: Lakera/mosscap_prompt_injection,        license: mit,        family: direct_injection}
+  spml:          {hf_id: reshabhs/SPML_Chatbot_Prompt_Injection, license: mit,        family: chatbot_injection}
+  # --- jailbreaks
+  in_the_wild:   {hf_id: TrustAIRLab/in-the-wild-jailbreak-prompts, license: mit,     family: jailbreak_template}
+  jackhhao:      {hf_id: jackhhao/jailbreak-classification,      license: apache-2.0, family: jailbreak_template}
+  wildjailbreak: {hf_id: allenai/wildjailbreak,                  license: odc-by,     family: adversarial_jailbreak, gated: true, cap: 1500}
+  # --- benign / hard negatives
+  xstest:        {hf_id: walledai/XSTest,                        license: cc-by-4.0,  family: null, gated: true}
+  orbench_hard:  {hf_id: bench-llm/or-bench,                     license: cc-by-4.0,  family: null}
+  orbench_80k:   {hf_id: bench-llm/or-bench,                     license: cc-by-4.0,  family: null, cap: 2000}
+  dolly:         {hf_id: databricks/databricks-dolly-15k,        license: cc-by-sa-3.0, family: null}
+  aya:           {hf_id: CohereLabs/aya_dataset,                 license: apache-2.0, family: null}

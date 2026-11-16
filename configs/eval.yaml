@@ -1,0 +1,19 @@
+# Settings for `gl eval` and `gl report`.
+data_version: v2
+
+# Operating point: the threshold that catches this share of attacks on dev.
+target_tpr: 0.95
+
+# Extra fixed operating points per detector, set in advance (never tuned on any split).
+# d0: block as soon as any rule fires (score > 0).
+# d2: the judge's own verdict (the rubric says: benign if attack_probability < 50).
+extra_operating_points:
+  d0: {any_rule_fires: 0.000001}
+  d2: {judge_verdict: 0.5}
+
+bootstrap: {resamples: 1000, seed: 0}
+
+batch_size: 256
+
+# Latency: score this many examples one at a time (no cache), after a short warm-up.
+latency: {sample: 200, seed: 0, warmup: 5}

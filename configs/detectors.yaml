@@ -1,0 +1,42 @@
+# Per-detector settings. Tuned on dev only.
+
+# Hard cap on API spending across all runs (used from M4, LLM judge).
+spending_cap_usd: 5.0
+
+d0: {}  # rules live in src/guardlens/detectors/d0_heuristic.py (versioned there)
+
+d1:
+  model: jhu-clsp/mmBERT-base  # multilingual ModernBERT
+  run_name: mmbert-v1  # bump when anything below changes; checkpoints never overwritten
+  classes: [benign, direct_injection, chatbot_injection, jailbreak_template]
+  max_length: 512
+  tail_tokens: 126  # head + tail truncation: first ~384 + last 126 tokens
+  lr: 3.0e-5
+  epochs: 3  # the best epoch by dev AUROC is kept
+  batch_size: 8  # 512-token batches of 16 don't fit next to the model (~0.33 GB per text)
+  grad_accum: 4  # effective batch 32
+  warmup_ratio: 0.06
+  weight_decay: 0.01
+  seed: 13
+  freeze_embeddings: true  # 256k-word table stays pretrained; needed to fit 8 GB VRAM
+  gradient_checkpointing: false
+  eval_batch_size: 32
+  device: cuda
+
+d2:
+  model: claude-haiku-5-5
+  effort: low  # sent as output_config.effort: low | medium | high | xhigh | max
+  max_tokens: 2048  # covers adaptive thinking + the short JSON answer
+  concurrency: 4  # API calls in flight at once
+  max_retries: 5  # SDK retries on rate limits / server errors
+  prices: {input_per_mtok: 0.10, output_per_mtok: 0.50}  # Haiku 5.5, prompts < 100K tokens
+  pilot_size: 200  # `gl judge-pilot`: dev examples balanced over the 6 categories
+  pilot_seed: 0
+
+d3:
+  model: intfloat/multilingual-e5-base
+  prefix: "query: "  # e5 models expect this prefix
+  k: 10
+  batch_size: 64
+  max_seq_length: 512
+  device: cuda
