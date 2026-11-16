@@ -17,3 +17,19 @@ batch_size: 256
 
 # Latency: score this many examples one at a time (no cache), after a short warm-up.
 latency: {sample: 200, seed: 0, warmup: 5}
+
+# FPR at these catch rates (threshold-free, from each split's own curve).
+fpr_at_tpr_levels: [0.90, 0.95, 0.99]
+
+# Operating point per detector for the headline table (others: tpr95_on_dev).
+# D0 and D2 can't reach 95 % catch without blocking most benign text (degenerate threshold).
+main_operating_point: {d0: any_rule_fires, d2: judge_verdict}
+
+# Fixed-rule ensembles (nothing fitted). Built from the components' predictions.
+ensembles:
+  e1: {kind: mean, components: [d1, d3]}
+  # D1 decides when confident; inside the band, D2's verdict decides (mapped into the band).
+  e2: {kind: cascade, components: [d1, d2], band: [0.05, 0.95]}
+
+# Error analysis: seeded sample of FN / FP x seen / held-out at the detector's dev threshold.
+error_sample: {detector: d1, per_cell: 25, seed: 0}

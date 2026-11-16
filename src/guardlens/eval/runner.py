@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from guardlens.data.schema import Example
 from guardlens.detectors.base import Detector
 from guardlens.eval.config import LatencyConfig
-from guardlens.run_info import eval_tag_at_head, git_commit
+from guardlens.run_info import eval_tag_at_head, git_commit, working_tree_clean
 
 
 class RunConfig(BaseModel):
@@ -52,6 +52,11 @@ def assert_split_allowed(split: str) -> None:
         raise PermissionError(
             "The test split can only be evaluated from a commit tagged eval-v*. "
             "Tune on dev; tag a commit when the configuration is frozen."
+        )
+    if split == "test" and not working_tree_clean():
+        raise PermissionError(
+            "The test split needs a clean working tree (outside results/): commit or undo "
+            "your changes so the eval-v* tag describes the code that runs."
         )
 
 

@@ -37,5 +37,21 @@ def eval_tag_at_head() -> str | None:
     return result.stdout.strip() or None
 
 
+def working_tree_clean() -> bool:
+    """True when git sees no uncommitted changes outside `results/` (runs write there while
+    a test evaluation is in progress). False when git is unavailable."""
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", "--", ".", ":(exclude)results"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return result.stdout.strip() == ""
+
+
 def file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()

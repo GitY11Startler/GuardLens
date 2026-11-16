@@ -28,6 +28,12 @@ def build_parser() -> argparse.ArgumentParser:
     tr = sub.add_parser("train", help="Fine-tune a learned detector on train, calibrate on dev.")
     tr.add_argument("--detector", choices=["d1"], default="d1")
 
+    ens = sub.add_parser("ensemble", help="Build the ensembles in eval.yaml from existing runs.")
+    ens.add_argument("--split", choices=["dev", "test"], default="dev")
+
+    err = sub.add_parser("error-sample", help="Seeded sample of FN/FP ids for error analysis.")
+    err.add_argument("--split", choices=["dev", "test"], default="dev")
+
     sub.add_parser(
         "judge-pilot",
         help="Score a small balanced dev sample with D2; print quality, cost and an estimate.",
@@ -255,18 +261,84 @@ def run_judge_pilot() -> int:
     return 0
 
 
-def run_report(split: str) -> int:
-    from guardlens.detectors.registry import DETECTOR_NAMES
+def run_ensembles(split: str) -> int:
+    from guardlens.data.build_dataset import load_split
     from guardlens.eval.config import load_eval_config
-    from guardlens.eval.report import build_report
+    from guardlens.eval.ensemble import build_ensemble
     from guardlens.settings import get_settings
 
     settings = get_settings()
     config = load_eval_config(settings.configs_dir / "eval.yaml")
-    rows = build_report(DETECTOR_NAMES, split, config, settings.results_dir)
+    examples = load_split(settings.data_dir / "processed", config.data_version, split)
+    for name, cfg in config.ensembles.items():
+        run_dir = build_ensemble(
+            name, cfg, split, config.data_version, settings.results_dir, examples, config.latency
+        )
+        cost = json.loads((run_dir / "cost.json").read_text("utf-8"))
+        extra = (
+            f" | {cost['share_sent_to_second']:.1%} of texts sent to {cfg.components[1]}"
+            if "share_sent_to_second" in cost
+            else ""
+        )
+        print(f"[{name}] {cfg.kind} of {', '.join(cfg.components)}{extra} -> {run_dir}")
+    return 0
+
+
+def run_error_sample(split: str) -> int:
+    import csv
+
+    from guardlens.data.config import load_data_config
+    from guardlens.eval.config import load_eval_config
+    from guardlens.eval.errors import error_sample
+    from guardlens.eval.report import operating_points
+    from guardlens.eval.runner import load_predictions, run_dir_for
+    from guardlens.eval.slices import held_out_sources
+    from guardlens.settings import get_settings
+
+    settings = get_settings()
+    config = load_eval_config(settings.configs_dir / "eval.yaml")
+    c = config.error_sample
+    held = held_out_sources(load_data_config(settings.configs_dir / "data.yaml"))
+    dev_preds = load_predictions(
+        run_dir_for(settings.results_dir, c.detector, "dev", config.data_version)
+    )
+    points = operating_points(c.detector, dev_preds, config)
+    point = config.main_operating_point.get(c.detector, f"tpr{int(config.target_tpr * 100)}_on_dev")
+    preds = load_predictions(
+        run_dir_for(settings.results_dir, c.detector, split, config.data_version)
+    )
+    rows = error_sample(preds, points[point], held, c.per_cell, c.seed)
+
+    out = settings.results_dir / "error_analysis" / f"{c.detector}_{split}_sample.csv"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+    cells = sorted({(r["kind"], r["slice"], r["cell_size"]) for r in rows})
+    for kind, slice_name, size in cells:
+        n = sum(r["kind"] == kind and r["slice"] == slice_name for r in rows)
+        print(f"[{c.detector}] {kind} {slice_name}: sampled {n} of {size}")
+    print(f"[{c.detector}] {point} (threshold {points[point]:.4f}) -> {out}")
+    return 0
+
+
+def run_report(split: str) -> int:
+    from guardlens.data.config import load_data_config
+    from guardlens.detectors.registry import DETECTOR_NAMES
+    from guardlens.eval.config import load_eval_config
+    from guardlens.eval.report import build_report
+    from guardlens.eval.slices import held_out_sources
+    from guardlens.settings import get_settings
+
+    settings = get_settings()
+    config = load_eval_config(settings.configs_dir / "eval.yaml")
+    held = held_out_sources(load_data_config(settings.configs_dir / "data.yaml"))
+    names = DETECTOR_NAMES + list(config.ensembles)
+    rows = build_report(names, split, config, settings.results_dir, held)
     for r in rows:
         print(
-            f"{r['detector']} @ {r['operating_point']}: "
+            f"{r['detector']} @ {r['operating_point']} [{r['slice']}]: "
             f"AUROC {r['auroc']:.3f} [{r['auroc_low']:.3f}, {r['auroc_high']:.3f}]"
             f" | catch {r['recall']:.3f} | FPR {r['fpr']:.3f} | F1 {r['f1']:.3f}"
             f" | latency p50 {r['latency_p50_ms']:.2f} ms"
@@ -294,6 +366,10 @@ def main(argv: list[str] | None = None) -> int:
         return run_train(args.detector)
     if args.command == "judge-pilot":
         return run_judge_pilot()
+    if args.command == "ensemble":
+        return run_ensembles(args.split)
+    if args.command == "error-sample":
+        return run_error_sample(args.split)
 
     milestone = PLANNED_COMMANDS[args.command]
     print(f"`gl {args.command}` is not implemented yet (planned for {milestone}).")

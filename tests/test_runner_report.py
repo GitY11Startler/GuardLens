@@ -71,12 +71,29 @@ def test_runner_refuses_changed_detector_config(tmp_path: Path) -> None:
         _run(changed, examples, tmp_path)
 
 
-def test_test_split_is_refused_without_eval_tag(tmp_path: Path) -> None:
-    with pytest.raises(PermissionError):
+def _git_state(monkeypatch: pytest.MonkeyPatch, tag: str | None, clean: bool) -> None:
+    """Pretend HEAD has `tag` and the working tree is (not) clean, whatever the real repo is."""
+    monkeypatch.setattr("guardlens.eval.runner.eval_tag_at_head", lambda: tag)
+    monkeypatch.setattr("guardlens.eval.runner.working_tree_clean", lambda: clean)
+
+
+def test_test_split_is_refused_without_eval_tag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _git_state(monkeypatch, tag=None, clean=True)
+    with pytest.raises(PermissionError, match="eval-v"):
         assert_split_allowed("test")
     with pytest.raises(PermissionError):
         _run(HeuristicDetector(), toy_split("t"), tmp_path, split="test")
     assert_split_allowed("dev")  # dev is always allowed
+
+
+def test_test_split_is_refused_with_uncommitted_changes(monkeypatch: pytest.MonkeyPatch) -> None:
+    _git_state(monkeypatch, tag="eval-v1", clean=False)
+    with pytest.raises(PermissionError, match="clean working tree"):
+        assert_split_allowed("test")
+    _git_state(monkeypatch, tag="eval-v1", clean=True)
+    assert_split_allowed("test")  # tagged and clean: allowed
 
 
 def test_latency_bypasses_the_embedding_cache(tmp_path: Path) -> None:
@@ -146,6 +163,54 @@ def test_report_reads_cost_of_paid_detectors(tmp_path: Path) -> None:
     (d0_dir / "cost.json").write_text('{"cost_per_1k_usd": 0.17, "api_calls": 3}', "utf-8")
     rows = build_report(["d0"], "dev", CONFIG, tmp_path)
     assert rows[0]["cost_per_1k_usd"] == pytest.approx(0.17)
+
+
+def test_report_slices_seen_and_held_out(tmp_path: Path) -> None:
+    """Test split with a held-out source: rows, tables and figures per slice."""
+    dev = toy_split("dev")
+    held = [make_example(f"quiet held {i}", ATTACK, "held_src", "fam_new") for i in range(20)] + [
+        make_example(f"held look-alike garden {i}", BENIGN, "held_src") for i in range(20)
+    ]
+    test = toy_split("test") + held
+    _run(HeuristicDetector(), dev, tmp_path, "dev")
+    run_dir = run_dir_for(tmp_path, "d0", "test", "vtest")
+    run_detector(HeuristicDetector(), test, run_dir, "dev", "vtest", "sha", batch_size=7)
+    # (scored with split="dev" so the test-split guard isn't needed; only the folder says test)
+
+    rows = build_report(["d0"], "test", CONFIG, tmp_path, frozenset({"held_src"}))
+    by_slice = {r["slice"]: r for r in rows if r["operating_point"] == "tpr95_on_dev"}
+    assert set(by_slice) == {"all", "seen", "held_out"}
+    assert by_slice["held_out"]["n"] == 40 and by_slice["seen"]["n"] == 60
+    assert by_slice["held_out"]["recall"] == 0.0  # held-out attacks have no trigger phrase
+    assert by_slice["seen"]["recall"] == 1.0
+
+    with (tmp_path / "fpr_at_tpr_test.csv").open(encoding="utf-8") as f:
+        fpr_rows = list(csv.DictReader(f))
+    assert {(r["slice"], r["catch_rate"]) for r in fpr_rows} == {
+        (s, str(level)) for s in ("all", "seen", "held_out") for level in (0.9, 0.95, 0.99)
+    }
+    with (tmp_path / "summary.csv").open(encoding="utf-8") as f:
+        headline = list(csv.DictReader(f))
+    assert len(headline) == 1 and headline[0]["operating_point"] == "tpr95_on_dev"
+    assert float(headline[0]["recall_held_out"]) == 0.0
+    assert not (tmp_path / "comparisons_test.csv").exists()  # one detector: nothing to compare
+    assert (tmp_path / "figures" / "fpr_vs_catch_test_heldout.png").exists()
+
+
+def test_headline_uses_main_operating_point(tmp_path: Path) -> None:
+    _run(HeuristicDetector(), toy_split("dev"), tmp_path)
+    config = CONFIG.model_copy(
+        update={
+            "extra_operating_points": {"d0": {"any_rule_fires": 1e-6}},
+            "main_operating_point": {"d0": "any_rule_fires"},
+        }
+    )
+    build_report(["d0"], "dev", config, tmp_path)
+    with (tmp_path / "headline_dev.csv").open(encoding="utf-8") as f:
+        headline = list(csv.DictReader(f))
+    assert headline[0]["operating_point"] == "any_rule_fires"
+    assert "recall_held_out" not in headline[0]  # dev has no held-out slice
+    assert not (tmp_path / "summary.csv").exists()  # only written for test
 
 
 def test_wilson_interval() -> None:

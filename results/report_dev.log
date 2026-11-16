@@ -1,0 +1,9 @@
+d0 @ tpr95_on_dev [all]: AUROC 0.669 [0.657, 0.681] | catch 1.000 | FPR 1.000 | F1 0.523 | latency p50 0.10 ms
+d0 @ any_rule_fires [all]: AUROC 0.669 [0.657, 0.681] | catch 0.412 | FPR 0.088 | F1 0.523 | latency p50 0.10 ms
+d1 @ tpr95_on_dev [all]: AUROC 0.996 [0.995, 0.997] | catch 0.950 | FPR 0.016 | F1 0.960 | latency p50 39.22 ms
+d2 @ tpr95_on_dev [all]: AUROC 0.875 [0.866, 0.884] | catch 0.996 | FPR 0.769 | F1 0.586 | latency p50 1038.20 ms
+d2 @ judge_verdict [all]: AUROC 0.875 [0.866, 0.884] | catch 0.655 | FPR 0.108 | F1 0.707 | latency p50 1038.20 ms
+d3 @ tpr95_on_dev [all]: AUROC 0.989 [0.987, 0.992] | catch 0.950 | FPR 0.044 | F1 0.936 | latency p50 20.35 ms
+e1 @ tpr95_on_dev [all]: AUROC 0.995 [0.994, 0.997] | catch 0.950 | FPR 0.015 | F1 0.961 | latency p50 59.24 ms
+e2 @ tpr95_on_dev [all]: AUROC 0.992 [0.991, 0.994] | catch 0.954 | FPR 0.078 | F1 0.910 | latency p50 39.28 ms
+-> C:\Users\yas1z\Downloads\GuardLens\results

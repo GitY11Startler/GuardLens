@@ -20,6 +20,20 @@ class LatencyConfig(BaseModel):
     warmup: int = 5
 
 
+class EnsembleConfig(BaseModel):
+    # mean: average of the components' scores.
+    # cascade: components = [first, second]; `first` decides outside `band`, `second` inside.
+    kind: Literal["mean", "cascade"]
+    components: list[str]
+    band: tuple[float, float] = (0.05, 0.95)
+
+
+class ErrorSampleConfig(BaseModel):
+    detector: str = "d1"
+    per_cell: int = 25  # per (FN/FP) x (seen/held-out) cell
+    seed: int = 0
+
+
 class EvalConfig(BaseModel):
     data_version: str
     target_tpr: float = 0.95
@@ -28,6 +42,11 @@ class EvalConfig(BaseModel):
     bootstrap: BootstrapConfig = BootstrapConfig()
     batch_size: int = 256
     latency: LatencyConfig = LatencyConfig()
+    fpr_at_tpr_levels: list[float] = [0.90, 0.95, 0.99]
+    # detector -> operating point used in the headline table (default: tpr<target>_on_dev)
+    main_operating_point: dict[str, str] = {}
+    ensembles: dict[str, EnsembleConfig] = {}
+    error_sample: ErrorSampleConfig = ErrorSampleConfig()
 
 
 class D3Config(BaseModel):
