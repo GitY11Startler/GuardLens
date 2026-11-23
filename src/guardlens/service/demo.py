@@ -119,7 +119,10 @@ def build_ui(run: Any) -> Any:
             "# GuardLens\n"
             "Paste a text and see how each detector judges it as a possible prompt-injection "
             "or jailbreak attempt. Score = how likely an attack; **BLOCK** when score ≥ "
-            "threshold (thresholds set on dev data). Input direction only."
+            "threshold (thresholds set on dev data). Input direction only.\n\n"
+            "*GuardLens detects attempts to **manipulate** the model, not dangerous topics: "
+            "a harmful request asked directly, without manipulation, is allowed by design. "
+            "Use a separate content-safety filter for that.*"
         )
         text = gr.Textbox(label="Text to check", lines=6)
         use_judge = gr.Checkbox(label="Also ask the LLM judge (D2): about $0.0002 per check")

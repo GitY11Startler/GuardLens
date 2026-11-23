@@ -158,6 +158,11 @@ Data, model weights, caches and raw predictions live in `data/` and are never co
 
 ## Limitations
 
+- **Not a content-safety filter.** GuardLens flags *manipulation* of the model (instruction
+  overrides, prompt extraction, jailbreak framings). A plainly harmful request asked directly,
+  with no manipulation, is allowed by design, and the benign data even includes sensitive-
+  sounding questions so that topic alone doesn't trigger a block. Pair it with a
+  topic-moderation model and rely on the LLM's own safety training for that layer.
 - **One held-out family.** Generalization is measured on WildJailbreak's adversarial
   jailbreaks only; other unseen attack types may behave differently.
 - **Label noise.** Some sources label similar role-play / persona text differently, and
