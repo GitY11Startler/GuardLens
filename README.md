@@ -221,3 +221,9 @@ app/          gradio_app.py
 results/      summary CSVs, figures, error analysis (no raw predictions)
 tests/        offline tests on harmless placeholder strings
 ```
+
+## License
+
+Code: MIT (see `LICENSE`). Datasets and model weights are not included; each dataset is
+downloaded from its original source and stays under its own license (see above).
+

@@ -1,6 +1,7 @@
 [project]
 name = "guardlens"
 version = "0.1.0"
+license = "MIT"
 description = "Defensive guardrail detectors for prompt injection / jailbreaks, plus a benchmark of those detectors."
 requires-python = ">=3.12,<3.13"
 dependencies = [
