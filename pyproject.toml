@@ -62,8 +62,13 @@ target-version = "py312"
 
 [tool.ruff.format]
 # Hand-formatted on purpose: D0's regex rules read better unbroken; env_check.py has the
-# owner's own edits.
-exclude = ["src/guardlens/detectors/d0_heuristic.py", "src/guardlens/env_check.py"]
+# owner's own edits; data/loaders.py is kept byte-identical to the code that built data v2
+# (it was missing from git until M6, see M6_result.md).
+exclude = [
+    "src/guardlens/detectors/d0_heuristic.py",
+    "src/guardlens/env_check.py",
+    "src/guardlens/data/loaders.py",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

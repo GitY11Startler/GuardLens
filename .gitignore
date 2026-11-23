@@ -14,9 +14,10 @@ dist/
 .ruff_cache/
 .mypy_cache/
 
-# Data, models, raw predictions (never committed)
-data/
-models/
+# Data, models, raw predictions (never committed). The leading "/" anchors to the repo root:
+# an unanchored "data/" also ignored the source package src/guardlens/data/.
+/data/
+/models/
 *.safetensors
 *.bin
 *.pt
