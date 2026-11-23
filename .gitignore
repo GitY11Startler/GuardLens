@@ -26,3 +26,6 @@ dist/
 *.faiss
 results/raw/
 results/**/predictions*.jsonl
+# Per-run folders (config, latency, cost) are machine-specific; committed copies would block
+# `gl eval` in a fresh clone. Summaries, figures and the error analysis stay committed.
+/results/runs/

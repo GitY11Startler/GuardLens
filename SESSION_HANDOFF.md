@@ -1,6 +1,6 @@
 # GuardLens — session handoff
 
-> Updated 2026-11-16 at the end of session 2 (M3, M4, M5 done). Read this, `CLAUDE.md` and `PROJECT_SPEC.md`
+> Updated 2026-11-24 at the end of session 2 (M3–M6 done: all milestones complete). Read this, `CLAUDE.md` and `PROJECT_SPEC.md`
 > before doing anything. Update this file at the end of every session.
 
 ## 1. Where we are
@@ -13,9 +13,10 @@
 | M3 Encoder D1 | ✅ done (mmBERT, frozen embeddings, run `mmbert-v1`) |
 | M4 LLM judge D2 | ✅ done (Haiku 5.5, effort low, `d2-prompt-v3`; $0.98 of $5 spent) |
 | M5 Full benchmark on test | ✅ done from tag `eval-v1` (commit `218f59e`); $2.46 of $5 spent in total |
-| **M6 Serve + demo + README** | **next: propose the plan and wait for approval.** |
+| M6 Serve + demo + README | ✅ done (fresh-clone check passed); demo GIF left for the user, at publishing time |
+| **Next** | **No milestone left.** Open: user records the GIF and decides when/where to publish (GitHub). Stretch goals in the spec (output moderation, multilingual slice, distilling D2 into D1, Docker) only if the user asks. |
 
-Checks at handoff: `uv run pytest -q` → 113 passed (3 GPU tests deselected);
+Checks at handoff: `uv run pytest -q` → 130 passed (3 GPU tests deselected);
 `uv run pytest -q -m gpu` → 3 passed; `uv run ruff check .` and `uv run mypy src tests` clean.
 
 ## 2. How the user wants to work
@@ -64,7 +65,10 @@ The user rewrites the project by hand from it to learn.
 - **GPU**: RTX 5070 Laptop, 8 GB, sm_120. **torch 2.15.0+cu132** and torchvision from the
   PyTorch cu132 index (pinned via `[tool.uv.sources]` in `pyproject.toml`; user's choice).
 - **Git**: repo exists (user-managed). Commits: `34dae9d` (M0–M4), `218f59e` = tag
-  **`eval-v1`** (M5 code, the test run's code). The **user commits and tags themselves**;
+  **`eval-v1`** (M5 code, the test run's code; it lacks `src/guardlens/data/`, which an
+  unanchored `data/` ignore pattern hid until M6, committed in `3d65fed`; documented in the
+  README), `237af33` (M5 results), `cb3cc4d`/`7b5c117` (M6), `3d65fed` (data package fix).
+  `/results/runs/` is git-ignored from M6 on (blocked `gl eval` in fresh clones). The **user commits and tags themselves**;
   give them a short step-by-step guide when it's time, then verify with read-only git
   commands. Nothing pushed anywhere yet. Never commit for them unless asked.
 - The runner refuses `--split test` unless HEAD has an `eval-v*` tag **and** the working tree
@@ -80,7 +84,7 @@ The user rewrites the project by hand from it to learn.
   `cli.use_project_hf_cache()` and `tests/conftest.py`), never in `~/.cache`.
 - Dependencies (all approved): torch, torchvision, pydantic, pydantic-settings, datasets,
   pyyaml, datasketch, sentence-transformers, scikit-learn, matplotlib, numpy, transformers,
-  anthropic (2.8.0, built on `httpx2`);
+  anthropic (2.8.0, built on `httpx2`), fastapi, uvicorn; optional group `demo`: gradio;
   dev: pytest, ruff, mypy, types-pyyaml. Build backend: hatchling.
 - `data/` ≈ 7 GB: `raw/hf` (datasets + e5 + mmBERT), `processed/v1` (kept for reference,
   superseded), `processed/v2` (in use), `cache/embeddings` (D3 vectors),
@@ -193,6 +197,11 @@ D1 F1 seen 0.961 → held-out 0.550. Trained detectors learn source style; the j
 generalizes; held-out benign look-alikes are hard for everyone. Details in
 `GuardLens Milestones/M5/M5_result.md`.
 
+**Service (M6)**: `gl serve` (E2 cascade, D1 fallback; thresholds in `configs/service.yaml`),
+demo `uv run --group demo python app/gradio_app.py`. Fresh-clone check: split files
+byte-identical, D0/D2/D3 identical, D1/E1/E2 within CI. API spend total **$2.50 of $5**.
+`ruff format` excludes d0_heuristic.py, env_check.py, data/loaders.py on purpose.
+
 ## 7. Commands
 
 ```powershell
@@ -209,15 +218,11 @@ uv run gl error-sample --split dev        # ids of sampled FN / FP
 uv run gl judge-pilot                     # D2 on 200 dev texts (~$0.03 if not cached)
 ```
 
-## 8. Next step: M6 (serve + demo + README)
+## 8. Next step
 
-Spec: FastAPI `/check`, Gradio verdict viewer, README with curves, limitations, reproduce
-steps, demo GIF. Acceptance = **a fresh clone + `uv sync` + documented commands reproduces
-the dev results**. Decisions to put to the user: new dependencies (fastapi, uvicorn, gradio
-→ ask), which detector(s) the service exposes (from M5: E2 cascade, or D1 alone for zero
-cost), how the service loads models (one heavy model on the GPU), API schema (pydantic,
-score/category/reason + verdict + which detector decided), README contents (M5 tables, the
-held-out gap, limitations, label-noise caveats, cost), how a fresh clone gets data
-(`gl build-data` needs HF_TOKEN + gated-dataset terms), whether/where to push the repo
-(user's call), and D2 spend for any demo (≈ $2.5 left). In the README, describe attacks by
-category, never quote them.
+All milestones (M0–M6) are done. Remaining, only on the user's request:
+- the demo GIF (`docs/demo_script.md`), then publishing to GitHub (pick a code license first;
+  check that nothing in `data/` or `.env` is tracked; the README links work relative to the
+  repo root);
+- spec stretch goals: output-direction moderation, a multilingual results slice, distilling
+  D2's judgments into D1, a Docker image.

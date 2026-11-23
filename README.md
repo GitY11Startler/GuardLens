@@ -92,6 +92,13 @@ public datasets ─► unify, deduplicate (exact + near-duplicate), split by sou
 split is scored once, from a git commit tagged `eval-v*` with a clean working tree (the runner
 refuses otherwise). Every run records its config, data hash and commit.
 
+> **Note on `eval-v1`.** The tagged commit is missing the 7 files of `src/guardlens/data/`
+> (an unanchored `data/` pattern in `.gitignore` ignored them; found by the fresh-clone check
+> in M6 and fixed in commit `3d65fed`). The test results stand: those files are byte-identical
+> to the copy archived when the data was built, were last modified five days before the tag,
+> and are unchanged since. To reproduce the test run, use the `eval-v1` code plus
+> `src/guardlens/data/` from `3d65fed`. A test now fails if any source file is git-ignored.
+
 ## Run the guardrail
 
 ```powershell
@@ -149,8 +156,9 @@ uv run gl report --split dev    # results/*_dev.csv and results/figures/*_dev.pn
 uv run pytest -q                # offline tests: no GPU, network or API key needed
 ```
 
-What to expect: the dataset build is deterministic (same `manifest.json` hash). D0 and D3
-reproduce exactly. D1 lands within the confidence intervals but not bit-for-bit (GPU training
+What to expect: the dataset build is deterministic: `train.json`, `dev.json` and `test.json`
+are byte-identical (`manifest.json` differs only in its timestamp, commit and a hash of the
+config file, which git's Windows line-ending conversion changes). D0 and D3 reproduce exactly. D1 lands within the confidence intervals but not bit-for-bit (GPU training
 is not fully deterministic). D2 answers can vary slightly between API calls; cached answers
 are reused. The test split only runs from a commit tagged `eval-v*`.
 
