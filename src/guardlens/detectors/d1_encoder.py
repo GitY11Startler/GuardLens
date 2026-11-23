@@ -81,11 +81,10 @@ class EncoderDetector(Detector):
 
     def _output(self, score: float, family: str) -> DetectorOutput:
         category = family if score >= 0.5 else NO_CATEGORY
-        return DetectorOutput(
-            score=min(max(score, 0.0), 1.0),
-            category=category,
-            reason=f"encoder: p(attack) = {score:.2f}; most likely attack family: {family}",
-        )
+        reason = f"encoder: p(attack) = {score:.2f}"
+        if score >= 0.5:
+            reason += f"; most likely attack family: {family}"
+        return DetectorOutput(score=min(max(score, 0.0), 1.0), category=category, reason=reason)
 
     def config(self) -> dict[str, Any]:
         return {

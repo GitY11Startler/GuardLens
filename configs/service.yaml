@@ -1,0 +1,24 @@
+# Settings for `gl serve` (FastAPI) and the Gradio demo.
+
+# e2 = cascade: D1 decides when confident, the LLM judge (D2) only inside the uncertain band
+#      (band: ensembles.e2 in configs/eval.yaml). Falls back to D1 alone if the judge is
+#      unavailable (no API key, spending cap reached, API error) and says so in the answer.
+# d1 = D1 only: free and offline.
+mode: e2
+
+# Block when score >= threshold. Copied from dev (results/summary_dev.csv, eval-v1), never
+# tuned on test: the headline operating point of each detector, i.e. the score that catches
+# 95 % of dev attacks (tpr95_on_dev), except d0 (any rule fires) and d2 (the judge's own
+# verdict), whose 95 % thresholds are degenerate. The service uses d1 and e2; the demo all.
+thresholds:
+  d0: 0.000001
+  d1: 0.7045162916183472
+  d2: 0.5
+  d3: 0.5002109388843028
+  e1: 0.6435630148000167
+  e2: 0.36499999999999994
+
+max_chars: 100000  # longer texts get HTTP 413 (dev's longest text is ~55,000 characters)
+d3_device: cpu  # demo only: keep the embedding model off the GPU (D1 already uses it)
+host: 127.0.0.1  # local only
+port: 8000

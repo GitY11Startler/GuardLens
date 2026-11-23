@@ -53,6 +53,8 @@ def test_category_only_when_score_is_high(tmp_path) -> None:
     d1 = EncoderDetector.load(_fake_run(tmp_path), "cpu")
     assert d1._output(0.2, "fam_x").category == NO_CATEGORY
     assert d1._output(0.8, "fam_y").category == "fam_y"
+    assert "fam_x" not in d1._output(0.2, "fam_x").reason  # no family named for benign text
+    assert "fam_y" in d1._output(0.8, "fam_y").reason
 
 
 def test_load_refuses_unfinished_run(tmp_path) -> None:

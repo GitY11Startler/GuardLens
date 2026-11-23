@@ -17,17 +17,23 @@ dependencies = [
     "numpy>=2.5.4",
     "transformers>=5.22.2",
     "anthropic>=2.8.0",
+    "fastapi>=0.165.0",
+    "uvicorn>=0.54.0",
 ]
 
 [project.scripts]
 gl = "guardlens.cli:main"
 
 [dependency-groups]
+demo = [
+    "gradio>=6.32.0",
+]
 dev = [
     "pytest>=8",
     "ruff>=0.8",
     "mypy>=1.13",
     "types-pyyaml>=6.0.12.20261111",
+    "httpx>=0.28.1",
 ]
 
 [build-system]
@@ -53,6 +59,11 @@ torchvision = { index = "pytorch-cu132" }
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.ruff.format]
+# Hand-formatted on purpose: D0's regex rules read better unbroken; env_check.py has the
+# owner's own edits.
+exclude = ["src/guardlens/detectors/d0_heuristic.py", "src/guardlens/env_check.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

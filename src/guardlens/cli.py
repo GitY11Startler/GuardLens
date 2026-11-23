@@ -5,11 +5,6 @@ import json
 import os
 from pathlib import Path
 
-# Commands that exist in the spec but are built in later milestones.
-PLANNED_COMMANDS = {
-    "serve": "M6",
-}
-
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="gl", description="GuardLens command-line tools.")
@@ -31,6 +26,8 @@ def build_parser() -> argparse.ArgumentParser:
     ens = sub.add_parser("ensemble", help="Build the ensembles in eval.yaml from existing runs.")
     ens.add_argument("--split", choices=["dev", "test"], default="dev")
 
+    sub.add_parser("serve", help="Start the guardrail API (configs/service.yaml).")
+
     err = sub.add_parser("error-sample", help="Seeded sample of FN/FP ids for error analysis.")
     err.add_argument("--split", choices=["dev", "test"], default="dev")
 
@@ -41,9 +38,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     rep = sub.add_parser("report", help="Summary CSVs + figures from existing runs.")
     rep.add_argument("--split", choices=["dev", "test"], default="dev")
-
-    for name, milestone in PLANNED_COMMANDS.items():
-        sub.add_parser(name, help=f"(not implemented yet: {milestone})")
 
     return parser
 
@@ -323,6 +317,23 @@ def run_error_sample(split: str) -> int:
     return 0
 
 
+def run_serve() -> int:
+    import uvicorn
+
+    from guardlens.service.app import build_guard, create_app
+    from guardlens.service.config import load_service_config
+    from guardlens.settings import get_settings
+
+    settings = get_settings()
+    config = load_service_config(settings.configs_dir / "service.yaml")
+    guard = build_guard(config, settings.configs_dir, settings.data_dir)
+    if guard.judge_unavailable_reason:
+        print(f"[serve] judge unavailable, running on D1 alone: {guard.judge_unavailable_reason}")
+    print(f"[serve] mode {config.mode} on http://{config.host}:{config.port} (docs at /docs)")
+    uvicorn.run(create_app(guard), host=config.host, port=config.port)
+    return 0
+
+
 def run_report(split: str) -> int:
     from guardlens.data.config import load_data_config
     from guardlens.detectors.registry import DETECTOR_NAMES
@@ -370,10 +381,10 @@ def main(argv: list[str] | None = None) -> int:
         return run_ensembles(args.split)
     if args.command == "error-sample":
         return run_error_sample(args.split)
+    if args.command == "serve":
+        return run_serve()
 
-    milestone = PLANNED_COMMANDS[args.command]
-    print(f"`gl {args.command}` is not implemented yet (planned for {milestone}).")
-    return 2
+    raise AssertionError(f"unhandled command {args.command!r}")  # argparse rejects unknowns
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import pytest
 
 import guardlens
-from guardlens.cli import PLANNED_COMMANDS, main
+from guardlens.cli import main
 from guardlens.settings import Settings
 
 
@@ -28,11 +28,3 @@ def test_cli_help_exits_cleanly() -> None:
     with pytest.raises(SystemExit) as exc:
         main(["--help"])
     assert exc.value.code == 0
-
-
-@pytest.mark.parametrize("command", sorted(PLANNED_COMMANDS))
-def test_planned_commands_report_not_implemented(
-    command: str, capsys: pytest.CaptureFixture[str]
-) -> None:
-    assert main([command]) == 2
-    assert "not implemented yet" in capsys.readouterr().out
